@@ -4,7 +4,11 @@
     "noImplicitAny": true,
     "module": "es6",
     "target": "es5",
-    "allowJs": true
+    "allowJs": true,
+    "moduleResolution": "Node"
+  },
+  "ts-node": {
+    "esm": true
   },
   "files": ["src/index.ts"]
 }

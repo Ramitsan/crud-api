@@ -1,5 +1,9 @@
 import { foo } from './script';
-import http from 'http';
+import http from 'node:http';
+
+console.log(http);
+// const h = require('http');
+// console.log(h);
 
 const a1: number = 1;
 console.log(a1);
@@ -14,10 +18,20 @@ const users = [
   }
 ];
 
-const server = http.createServer((request, resp) => {
-  console.log(request.url, request.method);
-  resp.statusCode = 200;
-  resp.end(JSON.stringify(users));
-})
+const endpoints = {
+  '/api/users': {
+    'POST': () => {},
+    'GET': () => {},
+    'PUT': () => {},
+    'DELETE': () => {}
+  }
+}
 
-server.listen(4000);
+// const server = http.createServer((request, resp) => {
+//   console.log(request.url, request.method);
+//   // const endpoint = 
+//   resp.statusCode = 200;
+//   resp.end(JSON.stringify(users));
+// })
+
+// server.listen(4000);
