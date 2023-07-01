@@ -2,19 +2,6 @@ import { foo } from './script';
 import http from 'node:http';
 import crypto from 'crypto';
 
-const a1: number = 1;
-console.log(a1);
-console.log(foo());
-
-const users = [
-  {
-    username: 'Ivan'
-  },
-  {
-    username: 'Alex'
-  }
-];
-
 interface IUser {
   id?: string;
   username: string;
@@ -29,21 +16,49 @@ class User {
   hobbies: Array<string>;
 
   constructor(data: IUser) {
-    if(!data.username || typeof data.age != 'string') {
+    if (!data.username || typeof data.username !== 'string') {
       throw new Error();
     }
     this.username = data.username;
-    if(!data.age || typeof data.age != 'number') {
+    if (!data.age || typeof data.age !== 'number') {
       throw new Error();
     }
     this.age = data.age;
-    if(!Array.isArray(data.hobbies) || data.hobbies.find(it => typeof it != 'string')) {
+    if (!Array.isArray(data.hobbies) || data.hobbies.find(it => typeof it !== 'string')) {
       throw new Error();
     }
     this.hobbies = data.hobbies;
     this.id = crypto.randomUUID();
   }
+
+  update(data: IUser) {
+    if (!data.username || typeof data.username !== 'string') {
+      throw new Error();
+    }
+    this.username = data.username;
+    if (!data.age || typeof data.age !== 'number') {
+      throw new Error();
+    }
+    this.age = data.age;
+    if (!Array.isArray(data.hobbies) || data.hobbies.find(it => typeof it !== 'string')) {
+      throw new Error();
+    }
+    this.hobbies = data.hobbies;
+  }
 }
+
+const users: Array<User> = [
+  new User({
+    username: 'Ivan',
+    age: 25,
+    hobbies: ['sport']
+  }),
+  new User({
+    username: 'Alex',
+    age: 28,
+    hobbies: []
+  })
+];
 
 const endpoints = {
   '/api/users/{userId}': {
@@ -53,45 +68,67 @@ const endpoints = {
         body += chunk.toString();
       });
       request.on('end', () => {
-       try { 
-        const userData: IUser = JSON.parse(body);
-        const user = new User(userData);
-        users.push(user);   
-        resp.statusCode = 201;
-        resp.end(JSON.stringify(user));     
-      } 
-      catch(err) {
-        resp.statusCode = 400;
-        resp.end(JSON.stringify(err));
-      }
+        try {
+          const userData: IUser = JSON.parse(body);
+          const user = new User(userData);
+          users.push(user);
+          resp.statusCode = 201;
+          resp.end(JSON.stringify(user));
+        }
+        catch (err) {
+          resp.statusCode = 400;
+          resp.end(JSON.stringify(err));
+        }
       });
     },
-    'GET': (request: http.IncomingMessage, resp: http.ServerResponse, params: {userId?: string}) => {
-      if(params.userId) {
+
+    'GET': (request: http.IncomingMessage, resp: http.ServerResponse, params: { userId?: string }) => {
+      if (params.userId) {
         const user = users.find(it => it.username == params.userId);
-        if(user) {
+        if (user) {
           resp.statusCode = 200;
           resp.end(JSON.stringify(user));
         } else {
           resp.statusCode = 404;
           resp.end(JSON.stringify('user not found'));
-        }       
+        }
       } else {
         resp.statusCode = 200;
         resp.end(JSON.stringify(users));
       }
-      
     },
-    'PUT': (request: http.IncomingMessage, resp: http.ServerResponse) => {
-      let body = '';
-      request.on('data', (chunk) => {
-        body += chunk.toString();
-      });
-      request.on('end', () => {
-        const user = JSON.parse(body);
-      });
+
+    'PUT': (request: http.IncomingMessage, resp: http.ServerResponse, params: { userId: string }) => {
+      if (params.userId) {
+        const user = users.find(it => it.username == params.userId);
+        if (user) {
+          let body = '';
+          request.on('data', (chunk) => {
+            body += chunk.toString();
+          });
+          request.on('end', () => {
+            try {
+              const userData: IUser = JSON.parse(body);
+              user.update(userData);
+              resp.statusCode = 201;
+              resp.end(JSON.stringify(user));
+            }
+            catch (err) {
+              resp.statusCode = 400;
+              resp.end(JSON.stringify(err));
+            }
+          });
+        } else {
+          resp.statusCode = 404;
+          resp.end(JSON.stringify('user not found'));
+        }
+      } else {
+        resp.statusCode = 400;
+        resp.end(JSON.stringify(users));
+      }
     },
-    'DELETE': () => {}
+
+    'DELETE': () => { }
   }
 }
 const checkEndpoint = (url: string, endpoint: string) => {
@@ -99,12 +136,12 @@ const checkEndpoint = (url: string, endpoint: string) => {
   const _endpoint = endpoint.split('/');
   const params: Record<string, string> = {};
   const notFound = _endpoint.find((it, index) => {
-    if(!it.startsWith('{') || !it.endsWith('}')) {
-      if(_url[index] == it) {
+    if (!it.startsWith('{') || !it.endsWith('}')) {
+      if (_url[index] == it) {
         return false;
       } else {
         return true;
-      }      
+      }
     } else {
       params[it.slice(1, it.length - 1)] = _url[index];
     }
@@ -125,10 +162,10 @@ const server = http.createServer((request, resp) => {
     return !!params;
   });
   const endpoint = endpoints[endpointName as keyof typeof endpoints];
-  if(endpoint) {
+  if (endpoint) {
     console.log(endpoint);
     const method = (endpoint as any)[request.method as any];
-    if(typeof method == 'function') {
+    if (typeof method == 'function') {
       method(request, resp, params);
     } else {
       resp.statusCode = 200;
@@ -139,7 +176,7 @@ const server = http.createServer((request, resp) => {
     resp.statusCode = 404;
     resp.end(JSON.stringify('404'));
   }
-  
+
 })
 
 server.listen(4000);
