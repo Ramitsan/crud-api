@@ -84,10 +84,10 @@ const endpoints = {
 
     'GET': (request: http.IncomingMessage, resp: http.ServerResponse, params: { userId?: string }) => {
       if (params.userId) {
-        const user = users.find(it => it.username == params.userId);
-        if (user) {
+        const foundUser = users.find(user => user.id == params.userId);
+        if (foundUser) {
           resp.statusCode = 200;
-          resp.end(JSON.stringify(user));
+          resp.end(JSON.stringify(foundUser));
         } else {
           resp.statusCode = 404;
           resp.end(JSON.stringify('user not found'));
@@ -100,8 +100,8 @@ const endpoints = {
 
     'PUT': (request: http.IncomingMessage, resp: http.ServerResponse, params: { userId: string }) => {
       if (params.userId) {
-        const user = users.find(it => it.username == params.userId);
-        if (user) {
+        const foundUser = users.find(user => user.id == params.userId);
+        if (foundUser) {
           let body = '';
           request.on('data', (chunk) => {
             body += chunk.toString();
@@ -109,9 +109,9 @@ const endpoints = {
           request.on('end', () => {
             try {
               const userData: IUser = JSON.parse(body);
-              user.update(userData);
+              foundUser.update(userData);
               resp.statusCode = 201;
-              resp.end(JSON.stringify(user));
+              resp.end(JSON.stringify(foundUser));
             }
             catch (err) {
               resp.statusCode = 400;
@@ -128,9 +128,26 @@ const endpoints = {
       }
     },
 
-    'DELETE': () => { }
+    'DELETE': (request: http.IncomingMessage, resp: http.ServerResponse, params: { userId?: string }) => { 
+      if (params.userId) {
+        const userIndex = users.findIndex(user => user.id == params.userId);
+        const foundUser = users[userIndex];       
+        if (foundUser) {
+          users.splice(userIndex, 1);
+          resp.statusCode = 204;
+          resp.end(JSON.stringify(foundUser));
+        } else {
+          resp.statusCode = 404;
+          resp.end(JSON.stringify('user not found'));
+        }
+      } else {
+        resp.statusCode = 400;
+        resp.end(JSON.stringify(''));
+      }
+    }
   }
 }
+
 const checkEndpoint = (url: string, endpoint: string) => {
   const _url = url.split('/');
   const _endpoint = endpoint.split('/');
