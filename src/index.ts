@@ -15,7 +15,7 @@ const users = [
 ];
 
 const endpoints = {
-  '/api/users/{userId}/{lkfdl}': {
+  '/api/users/{userId}': {
     'POST': (request: http.IncomingMessage, resp: http.ServerResponse) => {
       let body = '';
       request.on('data', (chunk) => {
@@ -27,9 +27,21 @@ const endpoints = {
       });
     },
     'GET': (request: http.IncomingMessage, resp: http.ServerResponse, params: {userId?: string}) => {
-      console.log(params);
-      resp.statusCode = 200;
-      resp.end(JSON.stringify(users));
+      if(params.userId) {
+        const user = users.find(it => it.username == params.userId);
+        if(user) {
+          resp.statusCode = 200;
+          resp.end(JSON.stringify(user));
+        } else {
+          resp.statusCode = 404;
+          resp.end(JSON.stringify('user not found'));
+        }
+       
+      } else {
+        resp.statusCode = 200;
+        resp.end(JSON.stringify(users));
+      }
+      
     },
     'PUT': (request: http.IncomingMessage, resp: http.ServerResponse) => {
       let body = '';
