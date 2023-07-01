@@ -1,5 +1,6 @@
 import { foo } from './script';
 import http from 'node:http';
+import crypto from 'crypto';
 
 const a1: number = 1;
 console.log(a1);
@@ -14,6 +15,36 @@ const users = [
   }
 ];
 
+interface IUser {
+  id?: string;
+  username: string;
+  age: number;
+  hobbies: Array<string>;
+}
+
+class User {
+  id: string;
+  username: string;
+  age: number;
+  hobbies: Array<string>;
+
+  constructor(data: IUser) {
+    if(!data.username || typeof data.age != 'string') {
+      throw new Error();
+    }
+    this.username = data.username;
+    if(!data.age || typeof data.age != 'number') {
+      throw new Error();
+    }
+    this.age = data.age;
+    if(!Array.isArray(data.hobbies) || data.hobbies.find(it => typeof it != 'string')) {
+      throw new Error();
+    }
+    this.hobbies = data.hobbies;
+    this.id = crypto.randomUUID();
+  }
+}
+
 const endpoints = {
   '/api/users/{userId}': {
     'POST': (request: http.IncomingMessage, resp: http.ServerResponse) => {
@@ -22,8 +53,17 @@ const endpoints = {
         body += chunk.toString();
       });
       request.on('end', () => {
-        const user = JSON.parse(body);
-        users.push(user);
+       try { 
+        const userData: IUser = JSON.parse(body);
+        const user = new User(userData);
+        users.push(user);   
+        resp.statusCode = 201;
+        resp.end(JSON.stringify(user));     
+      } 
+      catch(err) {
+        resp.statusCode = 400;
+        resp.end(JSON.stringify(err));
+      }
       });
     },
     'GET': (request: http.IncomingMessage, resp: http.ServerResponse, params: {userId?: string}) => {
@@ -35,8 +75,7 @@ const endpoints = {
         } else {
           resp.statusCode = 404;
           resp.end(JSON.stringify('user not found'));
-        }
-       
+        }       
       } else {
         resp.statusCode = 200;
         resp.end(JSON.stringify(users));
