@@ -1,8 +1,11 @@
-import { foo } from './script';
 import http from 'node:http';
 import crypto from 'crypto';
+import dotenv from 'dotenv';
 import {IUser} from './interfaces';
 
+import path from 'path';
+
+dotenv.config({path: path.resolve(__dirname, '.env')});
 class User {
   id: string;
   username: string;
@@ -190,6 +193,6 @@ const server = http.createServer((request, resp) => {
 
 })
 
-server.listen(4000);
+server.listen(process.env.PORT);
 
-console.log('server started');
+console.log('server started on port:', process.env.PORT );
