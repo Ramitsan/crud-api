@@ -164,7 +164,7 @@ const checkEndpoint = (url: string, endpoint: string) => {
 }
 
 export const serverHandler = (request: http.IncomingMessage, resp: http.ServerResponse) => {
-  console.log(request.url, request.method);
+  // console.log(request.url, request.method);
   let params;
   const endpointName = Object.keys(endpoints).find(it => {
     const _params = checkEndpoint(request.url, it);
@@ -173,7 +173,7 @@ export const serverHandler = (request: http.IncomingMessage, resp: http.ServerRe
   });
   const endpoint = endpoints[endpointName as keyof typeof endpoints];
   if (endpoint) {
-    console.log(endpoint);
+    // console.log(endpoint);
     const method = (endpoint as any)[request.method as any];
     if (typeof method == 'function') {
       method(request, resp, params);
