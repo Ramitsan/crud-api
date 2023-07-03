@@ -1,15 +1,22 @@
-# 🚀 Welcome to your new awesome project!
+## CRUD API
+Assignment: https://github.com/AlreadyBored/nodejs-assignments/blob/main/assignments/crud-api/assignment.md
 
-This project has been created using **webpack-cli**, you can now run
+Clone this repository:
 
-```
-npm run build
-```
+`
+$ git clone git@github.com:Ramitsan/crud-api.git
+`
 
-or
+`
+$ cd crud-api
+`
 
-```
-yarn build
-```
+`
+$ git checkout develop
+`
 
-to bundle your application
+`
+$ npm install
+`
+
+
