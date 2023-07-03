@@ -38,13 +38,21 @@ $ npm install
 **Start development mode**
 
 ```
-npm run start` or `npm run start:dev
+npm run start
+```
+**or** 
+```
+npm run start:dev
 ```
 
 **Start production mode**
 
 ```
-npm run build` or `npm run start:prod
+npm run build
+```
+**or** 
+```
+npm run start:prod
 ```
 
 **Start tests**
