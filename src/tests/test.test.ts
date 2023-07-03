@@ -1,5 +1,6 @@
 import {serverHandler} from '../server';
 import { Readable} from 'stream';
+import crypto from 'crypto';
 
 interface IRequestOptions {
   url: string;
@@ -132,4 +133,80 @@ describe('test server', () => {
     expect(deletedUserResponse.statusCode).toBe(204);
     expect(initialUsersResponse.statusCode).toBe(200);    
   });
+
+  test('should get user correct response', async () => {    
+   const getUsers = (id: string) => {
+      return new Promise<Response>((res) => {
+        const response = new Response();
+        response.onEnd = () => {
+          res(response);
+        }        
+        const request = new Request({
+          url: `/api/users/${id}`,
+          method: 'GET',          
+        })
+        serverHandler(request as any, response as any);  
+      })
+    }  
+
+    const usersResponse = await getUsers('5456');
+    expect(usersResponse.statusCode).toBe(400);    
+    
+    const usersResponse1 = await getUsers(crypto.randomUUID());
+    expect(usersResponse1.statusCode).toBe(404);    
+  });
+
+
+  test('should put user correct response', async () => { 
+    const addUser = () => {
+      return new Promise<Response>((res) => {
+        const response = new Response();
+        response.onEnd = () => {
+          res(response);
+        }
+
+        const request = new Request({
+          url: '/api/users',
+          method: 'POST',
+          body: {
+            username: 'Ivan',
+            age: 25,
+            hobbies: ['sport']
+          }
+        })
+        serverHandler(request as any, response as any);  
+      })
+    }
+
+    const putUser = (id: string) => {
+       return new Promise<Response>((res) => {
+         const response = new Response();
+         response.onEnd = () => {
+           res(response);
+         }        
+         const request = new Request({
+           url: `/api/users/${id}`,
+           method: 'PUT', 
+           body: {
+            username: 'Ivan',
+            age: 25,
+            hobbies: ['sport']
+          }         
+         })
+         serverHandler(request as any, response as any);  
+       })
+     } 
+     
+     const addedUserResponse = await addUser();
+     const addedUser = JSON.parse(addedUserResponse._data);
+ 
+     const usersResponse = await putUser(addedUser.id);
+     expect(usersResponse.statusCode).toBe(200);    
+     
+     const usersResponse1 = await putUser(crypto.randomUUID());
+     expect(usersResponse1.statusCode).toBe(404);   
+     
+     const usersResponse2 = await putUser('5646');
+     expect(usersResponse2.statusCode).toBe(400); 
+   });
 })

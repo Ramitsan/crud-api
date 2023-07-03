@@ -2,6 +2,9 @@ import http from 'node:http';
 import crypto from 'crypto';
 import {IUser} from './interfaces';
 
+const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+const userConstructorErrorMessage = 'Body does not contain required fields';
+
 class User {
   id: string;
   username: string;
@@ -10,15 +13,15 @@ class User {
 
   constructor(data: IUser) {
     if (!data.username || typeof data.username !== 'string') {
-      throw new Error();
+      throw new Error(userConstructorErrorMessage);
     }
     this.username = data.username;
     if (!data.age || typeof data.age !== 'number') {
-      throw new Error();
+      throw new Error(userConstructorErrorMessage);
     }
     this.age = data.age;
     if (!Array.isArray(data.hobbies) || data.hobbies.find(it => typeof it !== 'string')) {
-      throw new Error();
+      throw new Error(userConstructorErrorMessage);
     }
     this.hobbies = data.hobbies;
     this.id = crypto.randomUUID();
@@ -26,15 +29,15 @@ class User {
 
   update(data: IUser) {
     if (!data.username || typeof data.username !== 'string') {
-      throw new Error();
+      throw new Error(userConstructorErrorMessage);
     }
     this.username = data.username;
     if (!data.age || typeof data.age !== 'number') {
-      throw new Error();
+      throw new Error(userConstructorErrorMessage);
     }
     this.age = data.age;
     if (!Array.isArray(data.hobbies) || data.hobbies.find(it => typeof it !== 'string')) {
-      throw new Error();
+      throw new Error(userConstructorErrorMessage);
     }
     this.hobbies = data.hobbies;
   }
@@ -70,21 +73,26 @@ const endpoints = {
         }
         catch (err) {
           resp.statusCode = 400;
-          resp.end(JSON.stringify(err));
+          resp.end(JSON.stringify(err.message));
         }
       });
     },
 
     'GET': (request: http.IncomingMessage, resp: http.ServerResponse, params: { userId?: string }) => {
       if (params.userId) {
-        const foundUser = users.find(user => user.id == params.userId);
-        if (foundUser) {
-          resp.statusCode = 200;
-          resp.end(JSON.stringify(foundUser));
+        if(isUuid.test(params.userId)) {
+          const foundUser = users.find(user => user.id == params.userId);
+          if (foundUser) {
+            resp.statusCode = 200;
+            resp.end(JSON.stringify(foundUser));
+          } else {
+            resp.statusCode = 404;
+            resp.end(JSON.stringify('user not found'));
+          }
         } else {
-          resp.statusCode = 404;
-          resp.end(JSON.stringify('user not found'));
-        }
+          resp.statusCode = 400;
+          resp.end(JSON.stringify('User Id is invalid'));
+        }       
       } else {
         resp.statusCode = 200;
         resp.end(JSON.stringify(users));
@@ -92,7 +100,7 @@ const endpoints = {
     },
 
     'PUT': (request: http.IncomingMessage, resp: http.ServerResponse, params: { userId: string }) => {
-      if (params.userId) {
+      if (params.userId && isUuid.test(params.userId)) {
         const foundUser = users.find(user => user.id == params.userId);
         if (foundUser) {
           let body = '';
@@ -103,12 +111,12 @@ const endpoints = {
             try {
               const userData: IUser = JSON.parse(body);
               foundUser.update(userData);
-              resp.statusCode = 201;
+              resp.statusCode = 200;
               resp.end(JSON.stringify(foundUser));
             }
             catch (err) {
               resp.statusCode = 400;
-              resp.end(JSON.stringify(err));
+              resp.end(JSON.stringify(err.message));
             }
           });
         } else {
@@ -117,12 +125,12 @@ const endpoints = {
         }
       } else {
         resp.statusCode = 400;
-        resp.end(JSON.stringify(users));
+        resp.end(JSON.stringify('User Id is invalid'));
       }
     },
 
     'DELETE': (request: http.IncomingMessage, resp: http.ServerResponse, params: { userId?: string }) => { 
-      if (params.userId) {
+      if (params.userId && isUuid.test(params.userId)) {
         const userIndex = users.findIndex(user => user.id == params.userId);
         const foundUser = users[userIndex];       
         if (foundUser) {
@@ -135,7 +143,7 @@ const endpoints = {
         }
       } else {
         resp.statusCode = 400;
-        resp.end(JSON.stringify(''));
+        resp.end(JSON.stringify('User Id is invalid'));
       }
     }
   }
