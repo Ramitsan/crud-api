@@ -5,4 +5,10 @@ interface IUser {
   hobbies: Array<string>;
 }
 
-export { IUser};
+interface IRequestOptions {
+  url: string;
+  body?: any;
+  method?: string;
+}
+
+export { IUser, IRequestOptions };

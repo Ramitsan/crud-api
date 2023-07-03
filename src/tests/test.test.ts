@@ -1,12 +1,9 @@
 import {serverHandler} from '../server';
 import { Readable} from 'stream';
 import crypto from 'crypto';
+import { IRequestOptions } from '../interfaces';
 
-interface IRequestOptions {
-  url: string;
-  body?: any;
-  method?: string;
-}
+
 
 class Request extends Readable {
   url: string;
