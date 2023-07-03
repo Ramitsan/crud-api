@@ -191,3 +191,5 @@ const server = http.createServer((request, resp) => {
 })
 
 server.listen(4000);
+
+console.log('server started');
