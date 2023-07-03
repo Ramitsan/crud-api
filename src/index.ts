@@ -1,13 +1,7 @@
 import { foo } from './script';
 import http from 'node:http';
 import crypto from 'crypto';
-
-interface IUser {
-  id?: string;
-  username: string;
-  age: number;
-  hobbies: Array<string>;
-}
+import {IUser} from './interfaces';
 
 class User {
   id: string;
