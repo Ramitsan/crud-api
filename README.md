@@ -55,6 +55,10 @@ npm run build
 npm run start:prod
 ```
 
+In develop mode used test .env file from src folder, but in production mode .env file should be created in dist folder manually. 
+
+Please, try create .env file in dist folder with PORT property.
+
 **Start tests**
 
 ```
