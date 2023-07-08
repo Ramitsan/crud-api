@@ -1,12 +1,10 @@
-import {foo} from './script';
-import http from 'http';
+import http from 'node:http';
+import dotenv from 'dotenv';
+import path from 'path';
+import {serverHandler} from './server';
 
-const a1: number = 1;
-console.log(a1);
-console.log(foo());
+dotenv.config({path: path.resolve(__dirname, '.env')});
 
-const server = http.createServer((request, resp) => {
-
-})
-
-server.listen(4000);
+const server = http.createServer(serverHandler);
+server.listen(process.env.PORT);
+console.log('server started on port:', process.env.PORT );
