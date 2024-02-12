@@ -1,6 +1,6 @@
 import http from 'node:http';
 import crypto from 'crypto';
-import {IUser} from './interfaces';
+import { IUser } from './interfaces';
 
 const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 const userConstructorErrorMessage = 'Body does not contain required fields';
@@ -80,7 +80,7 @@ const endpoints = {
 
     'GET': (request: http.IncomingMessage, resp: http.ServerResponse, params: { userId?: string }) => {
       if (params.userId) {
-        if(isUuid.test(params.userId)) {
+        if (isUuid.test(params.userId)) {
           const foundUser = users.find(user => user.id == params.userId);
           if (foundUser) {
             resp.statusCode = 200;
@@ -92,7 +92,7 @@ const endpoints = {
         } else {
           resp.statusCode = 400;
           resp.end(JSON.stringify('User Id is invalid'));
-        }       
+        }
       } else {
         resp.statusCode = 200;
         resp.end(JSON.stringify(users));
@@ -129,10 +129,10 @@ const endpoints = {
       }
     },
 
-    'DELETE': (request: http.IncomingMessage, resp: http.ServerResponse, params: { userId?: string }) => { 
+    'DELETE': (request: http.IncomingMessage, resp: http.ServerResponse, params: { userId?: string }) => {
       if (params.userId && isUuid.test(params.userId)) {
         const userIndex = users.findIndex(user => user.id == params.userId);
-        const foundUser = users[userIndex];       
+        const foundUser = users[userIndex];
         if (foundUser) {
           users.splice(userIndex, 1);
           resp.statusCode = 204;
@@ -172,26 +172,32 @@ const checkEndpoint = (url: string, endpoint: string) => {
 }
 
 export const serverHandler = (request: http.IncomingMessage, resp: http.ServerResponse) => {
-  // console.log(request.url, request.method);
-  let params;
-  const endpointName = Object.keys(endpoints).find(it => {
-    const _params = checkEndpoint(request.url, it);
-    params = _params;
-    return !!params;
-  });
-  const endpoint = endpoints[endpointName as keyof typeof endpoints];
-  if (endpoint) {
-    // console.log(endpoint);
-    const method = (endpoint as any)[request.method as any];
-    if (typeof method == 'function') {
-      method(request, resp, params);
+  try {
+    // console.log(request.url, request.method);
+    let params;
+    const endpointName = Object.keys(endpoints).find(it => {
+      const _params = checkEndpoint(request.url, it);
+      params = _params;
+      return !!params;
+    });
+    const endpoint = endpoints[endpointName as keyof typeof endpoints];
+    if (endpoint) {
+      // console.log(endpoint);
+      const method = (endpoint as any)[request.method as any];
+      if (typeof method == 'function') {
+        method(request, resp, params);
+      } else {
+        resp.statusCode = 200;
+        resp.end(JSON.stringify('unknown method'));
+      }
     } else {
-      resp.statusCode = 200;
-      resp.end(JSON.stringify('unknown method'));
+      console.log('404');
+      resp.statusCode = 404;
+      resp.end(JSON.stringify('404'));
     }
-  } else {
-    console.log('404');
-    resp.statusCode = 404;
-    resp.end(JSON.stringify('404'));
+  }
+  catch (err) {
+    resp.statusCode = 500;
+    resp.end(JSON.stringify(typeof err == 'string' ? err : (err?.message || 'Server error') ));
   }
 }
