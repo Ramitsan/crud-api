@@ -38,14 +38,26 @@ $ npm install
 **Start development mode**
 
 ```
-npm run start` or `npm run start:dev
+npm run start
+```
+**or** 
+```
+npm run start:dev
 ```
 
 **Start production mode**
 
 ```
-npm run build` or `npm run start:prod
+npm run build
 ```
+**or** 
+```
+npm run start:prod
+```
+
+In develop mode used test .env file from src folder, but in production mode .env file should be created in dist folder manually. 
+
+Please, try create .env file in dist folder with PORT property.
 
 **Start tests**
 
