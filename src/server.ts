@@ -173,7 +173,6 @@ const checkEndpoint = (url: string, endpoint: string) => {
 
 export const serverHandler = (request: http.IncomingMessage, resp: http.ServerResponse) => {
   try {
-    // console.log(request.url, request.method);
     let params;
     const endpointName = Object.keys(endpoints).find(it => {
       const _params = checkEndpoint(request.url, it);
@@ -182,7 +181,6 @@ export const serverHandler = (request: http.IncomingMessage, resp: http.ServerRe
     });
     const endpoint = endpoints[endpointName as keyof typeof endpoints];
     if (endpoint) {
-      // console.log(endpoint);
       const method = (endpoint as any)[request.method as any];
       if (typeof method == 'function') {
         method(request, resp, params);
@@ -191,7 +189,6 @@ export const serverHandler = (request: http.IncomingMessage, resp: http.ServerRe
         resp.end(JSON.stringify('unknown method'));
       }
     } else {
-      console.log('404');
       resp.statusCode = 404;
       resp.end(JSON.stringify('404'));
     }

@@ -1,36 +1,9 @@
 import {serverHandler} from '../server';
-import { Readable} from 'stream';
 import crypto from 'crypto';
-import { IRequestOptions } from '../interfaces';
+import { Request, Response } from "./test-server";
+import { addUser, deleteUser, getUsers, putUser} from "./api";
 
-
-
-class Request extends Readable {
-  url: string;
-  method: string;
-  constructor(options: IRequestOptions) {
-    super();
-    this.url = options.url;
-    this.method = options.method || 'GET';
-    if(options.body) {
-      this.push(JSON.stringify(options.body));
-    }   
-    this.push(null);
-  }
-}
-
-class Response {
-  statusCode: number;
-  _data: string;
-  onEnd?: () => void;
-
-  end(data: string) {
-    this._data = data;
-    this.onEnd?.();
-  }
-}
-
-describe('test server', () => {
+describe('scenario 1: basic API status', () => {
   test('should return status 404 if endpoint is not /api/users', (done) => {
     const response = new Response();
     response.onEnd = () => {
@@ -61,56 +34,7 @@ describe('test server', () => {
     serverHandler(request as any, response as any);   
   });
 
-  test('should add and delete users', async () => {
-    const addUser = () => {
-      return new Promise<Response>((res) => {
-        const response = new Response();
-        response.onEnd = () => {
-          res(response);
-        }
-
-        const request = new Request({
-          url: '/api/users',
-          method: 'POST',
-          body: {
-            username: 'Ivan',
-            age: 25,
-            hobbies: ['sport']
-          }
-        })
-        serverHandler(request as any, response as any);  
-      })
-    }
-
-    const deleteUser = (id: string) => {
-      return new Promise<Response>((res) => {
-        const response = new Response();
-        response.onEnd = () => {
-          res(response);
-        }        
-        const request = new Request({
-          url: `/api/users/${id}`,
-          method: 'DELETE',
-          
-        })
-        serverHandler(request as any, response as any);  
-      })
-    }
-
-    const getUsers = () => {
-      return new Promise<Response>((res) => {
-        const response = new Response();
-        response.onEnd = () => {
-          res(response);
-        }        
-        const request = new Request({
-          url: '/api/users',
-          method: 'GET',
-          
-        })
-        serverHandler(request as any, response as any);  
-      })
-    }
+  test('should add and delete users', async () => {    
     const initialUsersResponse = await getUsers();
     const initialUsers = JSON.parse(initialUsersResponse._data);
     const addedUserResponse = await addUser();
@@ -155,45 +79,6 @@ describe('test server', () => {
 
 
   test('should put user correct response', async () => { 
-    const addUser = () => {
-      return new Promise<Response>((res) => {
-        const response = new Response();
-        response.onEnd = () => {
-          res(response);
-        }
-
-        const request = new Request({
-          url: '/api/users',
-          method: 'POST',
-          body: {
-            username: 'Ivan',
-            age: 25,
-            hobbies: ['sport']
-          }
-        })
-        serverHandler(request as any, response as any);  
-      })
-    }
-
-    const putUser = (id: string) => {
-       return new Promise<Response>((res) => {
-         const response = new Response();
-         response.onEnd = () => {
-           res(response);
-         }        
-         const request = new Request({
-           url: `/api/users/${id}`,
-           method: 'PUT', 
-           body: {
-            username: 'Ivan',
-            age: 25,
-            hobbies: ['sport']
-          }         
-         })
-         serverHandler(request as any, response as any);  
-       })
-     } 
-     
      const addedUserResponse = await addUser();
      const addedUser = JSON.parse(addedUserResponse._data);
  
